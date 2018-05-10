@@ -1,0 +1,364 @@
+<html>
+	<head>
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/series-label.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+		<script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+																												
+	</head>
+	<body>
+
+		<div id="Linea"></div>
+		<div id="Tarta"></div>
+
+		<script>
+
+			var Data1 = [];
+			var Data2 = [];
+			var Data3 = [];
+			var tabla_fechas = [];
+			var tabla_catego = [];
+			var tabla_valor = [];
+			var cate1  = [];
+			var cate2  = [];
+			var cate3  = [];
+			var cate4  = [];
+			var labels = [];
+			var labels1 = [];
+			
+			var valores_agrupados = {};
+			
+			var catnum1 = 0.00;
+			var catnum2 = 0.00;
+			var catnum3 = 0.00;
+			var catnum4 = 0.00;
+			var cattot = 0.00;
+		 
+			function createChart(cate1, cate2, cate3, cate4, catnum1, catnum2, catnum3, catnum4){ 
+			
+			 
+			Highcharts.chart('Linea', {
+
+			title: {
+				text: 'Gráfico de Líneas'
+			},
+
+			subtitle: {
+				text: 'Logtrust'
+			},
+			xAxis: {
+        categories: labels,
+					},
+
+			yAxis: {
+				title: {
+					text: 'Valores'
+				}
+			},
+			legend: {
+				layout: 'vertical',
+				align: 'right',
+				verticalAlign: 'middle'
+			},
+
+			plotOptions: {
+				series: {
+					label: {
+						connectorAllowed: false
+					},
+					
+        }
+    },
+
+			series: [
+			{
+				name: labels1[0],
+				data: cate1
+			}, 
+			{
+				name: labels1[1],
+				data: cate2
+			}, 
+			{
+				name: labels1[2],
+				data: cate3
+			}, 
+			{
+				name: labels1[3],
+				data: cate4
+			}],
+
+			responsive: {
+				rules: [{
+					condition: {
+						maxWidth: 500
+					},
+					chartOptions: {
+						legend: {
+							layout: 'horizontal',
+							align: 'center',
+							verticalAlign: 'bottom'
+						}
+					}
+				}]
+			}
+
+		});
+
+			Highcharts.chart('Tarta', {
+		chart: {
+			plotBackgroundColor: null,
+			plotBorderWidth: null,
+			plotShadow: false,
+			type: 'pie'
+		},
+		title: {
+			text: 'CATEGORIAS'
+		},
+		tooltip: {
+			pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+			pie: {
+				allowPointSelect: true,
+				cursor: 'pointer',
+				dataLabels: {
+					enabled: false
+				},
+				showInLegend: true
+			}
+		},
+		series: [{
+			name: 'Brands',
+			colorByPoint: true,
+			data: [{
+				name: labels1[0],
+				y: catnum1,
+				sliced: true,
+				selected: true
+			}, {
+				name: labels1[1],
+				y: catnum2
+			}, {
+				name: labels1[2],
+				y: catnum3
+			}, {
+				name:labels1[3],
+				y: catnum4
+			}]
+		}]
+		});
+		
+
+			}
+			
+		  //--------------------------------------------------------------------------------------
+		   function eliminarObjetosDuplicados(arr, prop) {
+					var nuevoArray = [];
+					var lookup  = {};
+
+					for (var i in arr) {
+						lookup[arr[i][prop]] = arr[i];
+										}
+
+					for (i in lookup) {
+						nuevoArray.push(lookup[i]);
+						}
+
+					return nuevoArray;
+			}
+
+			
+			//--------------------------------------------------------------------------------------
+			function sumarValoresFechaCategoria(fecha, categoria) {
+				var valor_final = 0;
+				for (var i=0; i<tabla_valor.length; i++) {
+					var elem = tabla_valor[i];
+					if (elem[fecha] !== undefined && elem[fecha][categoria] !== undefined) {
+						valor_final += elem[fecha][categoria]["valor"];
+					}
+				}
+				return valor_final;
+			}
+
+		   //--------------------------------------------------------------------------------------
+			function loadData() {
+			  var req = new XMLHttpRequest();
+			  req.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var jsonData = JSON.parse(this.responseText);
+					for (var i = 0; i < jsonData.length; i++) {
+						var fecha =  new Date(jsonData[i].d)
+						var fecha_i = fecha.toISOString()
+						var fecha_s = fecha_i.substr(0,10)
+						var categ =  jsonData[i].cat.toUpperCase();
+					    var valor =  jsonData[i].value;
+
+					    tabla_fechas.push({
+								"fecha"     : fecha_s	});
+
+						tabla_valor.push(
+							 {
+								[fecha_s] : {
+									[categ] : {
+										"valor" : valor
+									}
+								}
+							 }
+						 );
+
+						tabla_catego.push({
+								"categoria" : categ	 });
+					}
+				}
+			  };
+
+			  req.open("GET", "http://s3.amazonaws.com/logtrust-static/test/test/data1.json", true);
+			  req.send();
+
+			  var req = new XMLHttpRequest();
+			  req.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var jsonData = JSON.parse(this.responseText);
+					for (var i = 0; i < jsonData.length; i++) {
+						var fecha =   jsonData[i].myDate
+						var categ =  jsonData[i].categ;
+					    var valor =  jsonData[i].val;
+						tabla_fechas.push({
+								"fecha"     : fecha	});
+
+						 tabla_valor.push(
+							 {
+								[fecha] : {
+									[categ] : {
+										"valor" : valor
+									}
+								}
+							 }
+						 );
+
+						tabla_catego.push({
+								"categoria" : categ	 });
+
+
+
+					}
+				}
+			  };
+			  req.open("GET",  "http://s3.amazonaws.com/logtrust-static/test/test/data2.json", true);
+			  req.send();
+			  var req = new XMLHttpRequest();
+			  req.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					var jsonData = JSON.parse(this.responseText);
+					var expre1 = /\C\A\T\s\d/;
+					var expre2 = /(\d{4})[-](\d{2})[-](\d{2})/;
+					for (var i = 0; i < jsonData.length; i++) {
+						var raw =   jsonData[i].raw
+						var fecha = raw.match(expre2)[0];
+						var categ = raw.match(expre1)[0];
+					    var valor = jsonData[i].val;
+					    tabla_fechas.push({
+								"fecha"     : fecha	});
+
+						 tabla_valor.push(
+							 {
+								[fecha] : {
+									[categ] : {
+										"valor" : valor
+									}
+								}
+							 }
+						 );
+
+						tabla_catego.push({
+								"categoria" : categ	 });
+					}
+				}
+			  }
+
+
+			  req.open("GET",  "http://s3.amazonaws.com/logtrust-static/test/test/data3.json", true);
+			  req.send();
+			}
+
+			loadData();
+
+			function wait4Data(){
+				if (tabla_fechas.length > 0 && tabla_catego.length > 0){
+				// Cargamos una tabla con todas las diferentes fechas
+					var tabla_fechas_unicas = eliminarObjetosDuplicados(tabla_fechas, 'fecha');
+					    tabla_fechas_unicas.sort(function(a, b){
+						  var dateA =new Date(a.fecha), dateB=new Date(b.fecha)
+						return dateA-dateB //ordenamos en ascendente
+					})
+				// Cargamos una tabla con las diferentes categorías
+
+					var tabla_categ_unicas = eliminarObjetosDuplicados(tabla_catego, 'categoria');
+					tabla_categ_unicas = tabla_categ_unicas.sort();
+
+					//Inicializamos las tablas de categorías.
+					var cate1 = [];
+					var cate2 = [];
+					var cate3 = [];
+					var cate4 = [];
+					
+					
+					for (var i = 0; i < tabla_fechas_unicas.length; i++) {
+					    var fecha = tabla_fechas_unicas[i]["fecha"]
+						if (valores_agrupados[fecha] === undefined) {
+							valores_agrupados[fecha] = {};
+						}
+						for (var j = 0; j < tabla_categ_unicas.length; j++) {
+							var categ = tabla_categ_unicas[j]["categoria"]
+							if (valores_agrupados[fecha][categ] === undefined) {
+								valores_agrupados[fecha][categ] = sumarValoresFechaCategoria(fecha, categ);
+							}
+						}
+					}
+						for (var i = 0; i < tabla_fechas_unicas.length; i++){
+							labels.push(tabla_fechas_unicas[i].fecha);
+							}
+							
+						for (var i = 0; i < tabla_categ_unicas.length; i++){
+							labels1.push(tabla_categ_unicas[i].categoria);
+							}
+							
+					    for (var i = 0; i < tabla_categ_unicas.length; i++){
+					      for (var j = 0; j < tabla_fechas_unicas.length; j++){
+						      switch(i){
+							  case 0:  cate1.push(valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria]); break;
+							  case 1:  cate2.push(valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria]); break;
+							  case 2:  cate3.push(valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria]); break;
+							  default: cate4.push(valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria])
+								}
+							  switch(i){
+							  case 0:  catnum1 += (valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria]); break;
+							  case 1:  catnum2 += (valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria]); break;
+							  case 2:  catnum3 += (valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria]); break;
+							  default: catnum4 += (valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria])
+								}
+							  cattot += (valores_agrupados[tabla_fechas_unicas[j].fecha][tabla_categ_unicas[i].categoria])
+							}
+						}	  
+						cattot  /= 100
+						catnum1 /=cattot
+						catnum2 /=cattot
+						catnum3 /=cattot
+						catnum4 /=cattot
+						 
+					createChart(cate1, cate2, cate3, cate4, catnum1, catnum2, catnum3, catnum4);
+				}else{
+					alert('Cargando datos...');
+					window.setTimeout(wait4Data, 1000);
+				}
+			}
+
+			wait4Data();
+
+		</script>
+
+
+	</body>
+</html>
